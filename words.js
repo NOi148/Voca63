@@ -1,0 +1,12 @@
+export const DEFAULT_WORDS = [
+  {word:"identify with",pos:"phrasal v.",mu:"동일시하다",me:"(어떤 사람/상황에) 공감하다, 자신을 동일시하다",se:"George Russell said fans often <b>identify with</b> him because of his long journey from Formula 2 to a race winner.",sk:"조지 러셀은 팬들이 F2부터 레이스 우승까지의 긴 여정 때문에 자신과 동일시하는 경우가 많다고 말했다."},
+  {word:"animate",pos:"v.",mu:"생기를 불어넣다",me:"활기차게 하다 / (형) 살아있는, 생기 있는",se:"A podium finish seemed to <b>animate</b> Russell's entire team, sending waves of energy through the Mercedes garage.",sk:"포디엄 피니시는 러셀의 팀 전체에 생기를 불어넣는 것 같았고, 메르세데스 차고 전체에 활력이 넘쳤다."},
+  {word:"exhausted",pos:"adj.",mu:"지친 / 고갈된",me:"완전히 소진된, 기진맥진한",se:"Russell looked completely <b>exhausted</b> after the 70-lap race in Singapore, yet still delivered a flawless performance.",sk:"러셀은 싱가포르의 70랩 레이스 후 완전히 지쳐 보였지만, 여전히 완벽한 퍼포먼스를 선보였다."},
+  {word:"retrieval",pos:"n.",mu:"회수 / 검색",me:"정보·물건을 되찾거나 불러오는 행위",se:"The <b>retrieval</b> of crucial data from Russell's sensors helped engineers fine-tune the setup before qualifying.",sk:"러셀 센서에서 중요한 데이터를 회수한 덕분에 엔지니어들은 예선 전에 셋업을 미세 조정할 수 있었다."},
+  {word:"challenge",pos:"v. / n.",mu:"도전하다 / 이의 제기",me:"이의를 제기하다 / 난제, 도전 과제",se:"Russell has repeatedly <b>challenged</b> his engineers to think differently, pushing Mercedes forward.",sk:"러셀은 엔지니어들에게 다르게 생각하도록 반복적으로 도전장을 던지며 메르세데스를 앞으로 이끌었다."},
+  {word:"fluctuate",pos:"v.",mu:"변동하다 / 오르내리다",me:"불규칙하게 변하다",se:"Tyre temperatures <b>fluctuate</b> dramatically around Monaco, making Russell's smooth style a key advantage.",sk:"모나코에서는 타이어 온도가 극적으로 변동하기 때문에 러셀의 부드러운 드라이빙이 핵심 이점이 된다."},
+  {word:"implicit",pos:"adj.",mu:"암묵적인",me:"명시되지 않지만 내포된, 암묵적인",se:"There was an <b>implicit</b> understanding within Mercedes that Russell would be the main title contender.",sk:"러셀이 주요 우승 후보가 될 것이라는 암묵적인 합의가 메르세데스 내부에 있었다."},
+  {word:"navigate",pos:"v.",mu:"헤쳐나가다 / 탐색하다",me:"항해하다 / 복잡한 상황을 헤쳐나가다",se:"Russell had to <b>navigate</b> a chaotic Safety Car restart, threading his W15 through gaps.",sk:"러셀은 혼란스러운 세이프티카 리스타트를 헤쳐나가며 W15를 틈새로 밀어 넣었다."},
+  {word:"conviction",pos:"n.",mu:"확신",me:"강한 신념 / 유죄 판결",se:"Russell's <b>conviction</b> that Mercedes would return to the front never wavered.",sk:"메르세데스가 그리드 최전선으로 돌아올 것이라는 러셀의 확신은 힘든 시기에도 흔들리지 않았다."},
+  {word:"ascent",pos:"n.",mu:"상승 / 오르기",me:"상승, 오름 / 성장, 출세",se:"Russell's <b>ascent</b> from karting champion to F1 race winner is one of motorsport's great stories.",sk:"카팅 챔피언에서 F1 레이스 우승까지 러셀의 상승 스토리는 모터스포츠 역사의 훌륭한 이야기 중 하나다."},
+];

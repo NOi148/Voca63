@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GR63 단어장</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="logo">GR<span>63</span> VOCAB</div>
+  <nav>
+    <button class="nb on" onclick="goPage('study',this)">📚 학습</button>
+    <button class="nb" onclick="goPage('review',this)">🔥 오답<span class="bdg" id="rvbdg" style="display:none"></span></button>
+    <button class="nb" onclick="goPage('archive',this)">🗂 보관함</button>
+    <button class="nb" onclick="goPage('add',this)">➕ 추가</button>
+    <button class="nb" onclick="goPage('settings',this)">⚙️ 설정</button>
+  </nav>
+</header>
+<main>
+  <!-- 학습 -->
+  <div class="page on" id="page-study">
+    <div class="top">
+      <div class="stit">오늘의 단어</div>
+      <div class="dtag" id="tlabel"></div>
+    </div>
+    <div class="prog"><div class="pb" id="mprog"></div></div>
+    <div id="study-empty" class="empty" style="display:none">
+      <div class="ico">📭</div>
+      오늘 등록된 단어가 없어요<br>
+      <span style="font-size:.75rem">➕ 추가 탭에서 단어를 등록해보세요</span>
+    </div>
+    <div id="study-content">
+      <div class="scene" id="mscene">
+        <div class="flipper" id="mflip" onclick="flipMain()">
+          <div class="face fr">
+            <div class="fhint">단어</div>
+            <div class="wbig" id="fw"></div>
+            <div class="wpsm" id="fp"></div>
+            <div class="taph">👆 탭해서 뜻 보기</div>
+          </div>
+          <div class="face bk">
+            <div class="bword" id="fbw"></div>
+            <div class="bpos" id="fbp"></div>
+            <div class="mmain" id="fbm"></div>
+            <div class="mextra" id="fbe"></div>
+            <div class="sbox">
+              <div class="sen" id="fbs"></div>
+              <div class="skr" id="fbsk"></div>
+              <button class="tkrb" id="fbtkr" onclick="event.stopPropagation();tkr('fbsk','fbtkr')">🇰🇷 한글 번역 보기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cnav">
+        <button class="arr" onclick="mv(-1)">← 이전</button>
+        <span class="cnt" id="mcnt"></span>
+        <button class="arr" onclick="mv(1)">다음 →</button>
+      </div>
+      <div class="srow"><button class="sbtn" id="sfbtn" onclick="toggleShuffle()">🔀 섞기</button></div>
+      <div class="vrow">
+        <button class="vb vknow" onclick="mark('know')">✅ 알아요</button>
+        <button class="vb vhard" onclick="mark('hard')">😅 어려워요</button>
+        <button class="vb vno" onclick="mark('no')">❌ 몰라요</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 오답 -->
+  <div class="page" id="page-review"><div id="rvcont"></div></div>
+
+  <!-- 보관함 -->
+  <div class="page" id="page-archive">
+    <div class="slabel">🗂 날짜별 단어 보관함</div>
+    <div id="arclist"></div>
+  </div>
+
+  <!-- 추가 -->
+  <div class="page" id="page-add">
+    <div class="slabel">단어 추가하기</div>
+    <textarea class="addta" id="addinp" placeholder="단어를 자유롭게 입력하세요!
+예: identify with 동일시하다
+줄글도 OK: 오늘 animate랑 exhausted 추가하고 싶어"></textarea>
+    <div class="addhint">💡 뜻이 있으면 그대로, 없으면 단어만 써도 돼요. F1/GR 예문 자동 생성!</div>
+    <button class="addbtn" id="addbtn" onclick="addWords()">🏁 단어 추가 &amp; 예문 생성</button>
+    <div id="addgen"></div>
+    <div id="tadded" style="margin-top:20px;display:none">
+      <div class="slabel">오늘 추가한 단어</div>
+      <div id="tlist"></div>
+    </div>
+  </div>
+
+  <!-- 설정 -->
+  <div class="page" id="page-settings">
+    <div class="slabel">⚙️ 설정</div>
+    <div style="margin-bottom:6px;font-size:.78rem;color:var(--mu)">Gemini API 키</div>
+    <input id="apikey" type="password" class="addta" style="min-height:unset;margin-bottom:5px" placeholder="🔑 Google AI Studio API 키 (AIza...)">
+    <div class="addhint">aistudio.google.com에서 발급받은 키를 입력하세요. 브라우저에 저장됩니다.</div>
+    <button class="addbtn" onclick="saveKey()" style="margin-bottom:0">저장</button>
+
+    <div class="sep"></div>
+
+    <!-- 내보내기/가져오기 -->
+    <div class="iobx">
+      <div class="iotit">📤 데이터 내보내기 / 가져오기</div>
+      <div style="font-size:.72rem;color:var(--mu);margin-bottom:9px;line-height:1.6">
+        다른 브라우저나 기기에서 사용하려면 아래에서 데이터를 복사해 붙여넣으세요.
+      </div>
+      <textarea class="iota" id="iotxt" placeholder="여기에 내보낸 데이터를 붙여넣으세요..."></textarea>
+      <div class="iobtnrow">
+        <button class="iobtn ex" onclick="doExport()">📋 내보내기 (복사)</button>
+        <button class="iobtn im" onclick="doImport()">📥 가져오기 (붙여넣기)</button>
+      </div>
+    </div>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
