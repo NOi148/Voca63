@@ -142,7 +142,7 @@ function brv() {
   </div></div>
   <div class="vrow" style="margin-top:11px">
     <button class="vb vknow" onclick="rvm('know')">✅ 이제 알아요</button>
-    <button class="vb vno" onclick="rvm('no')">❌ 아직 모르겠어</button>
+    <button class="vb vno" onclick="rvm('no')">❌ 아직 모르겠어요</button>
   </div>`;
 }
 
