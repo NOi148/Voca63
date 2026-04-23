@@ -1,20 +1,20 @@
-import { DEFAULT_WORDS } from ‘./words.js’;
-import { loadWords, saveWords, loadWrong, saveWrong, loadApiKey, saveApiKey, exportData, importData } from ‘./storage.js’;
-
 // ── 데이터 초기화 ─────────────────────────────────────────────────────
 function ts() { return new Date().toISOString().slice(0, 10); }
 
 let words = loadWords();
 if (!words) {
-// 기본 단어는 과거 날짜로 저장 → 오늘의 단어에 안 뜸
 words = DEFAULT_WORDS.map(w => ({ …w, date: ‘2025-01-01’, wc: 0 }));
 saveWords(words);
 }
-let wrong = loadWrong();
-let ci = 0, sf = false, ord = words.map((_, i) => i);
+let wrong  = loadWrong();
+let ci = 0, sf = false;
+let ord = words.map((w, i) => w.date === ts() ? i : -1).filter(i => i >= 0);
 
 // ── 유틸 ─────────────────────────────────────────────────────────────
-function fd(s) { const d = new Date(s); return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`; }
+function fd(s) {
+const d = new Date(s + ‘T00:00:00’);
+return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+}
 function tl() { return new Date().toLocaleDateString(‘ko-KR’, { year:‘numeric’, month:‘long’, day:‘numeric’ }); }
 
 let tt;
@@ -25,7 +25,7 @@ clearTimeout(tt); tt = setTimeout(() => t.classList.remove(‘show’), 2200);
 }
 
 // ── 페이지 이동 ───────────────────────────────────────────────────────
-window.goPage = function(id, btn) {
+function goPage(id, btn) {
 document.querySelectorAll(’.page’).forEach(p => p.classList.remove(‘on’));
 document.querySelectorAll(’.nb’).forEach(b => b.classList.remove(‘on’));
 document.getElementById(‘page-’ + id).classList.add(‘on’);
@@ -35,21 +35,17 @@ if (id === ‘review’)   { rvi = 0; brv(); }
 if (id === ‘archive’)  rarc();
 if (id === ‘add’)      rta();
 if (id === ‘settings’) rset();
-};
-
-// ── 오늘 단어만 필터링 ────────────────────────────────────────────────
-function todayWords() {
-const today = ts();
-return words.filter(w => w.date === today);
 }
 
-function dw() { return ord.map(i => words[i]).filter(w => w.date === ts()); }
+// ── 오늘 단어 ─────────────────────────────────────────────────────────
+function todayWords() { return words.filter(w => w.date === ts()); }
+function dw() { return ord.map(i => words[i]); }
 
 // ── 학습 페이지 ───────────────────────────────────────────────────────
 function rs() {
 document.getElementById(‘tlabel’).textContent = tl();
 const tw = todayWords();
-const empty = document.getElementById(‘study-empty’);
+const empty   = document.getElementById(‘study-empty’);
 const content = document.getElementById(‘study-content’);
 
 if (!tw.length) {
@@ -60,22 +56,20 @@ return;
 empty.style.display = ‘none’;
 content.style.display = ‘block’;
 
-const todayOrd = words.map((w, i) => w.date === ts() ? i : -1).filter(i => i >= 0);
-if (!sf) ord = todayOrd;
-
+if (!sf) ord = words.map((w, i) => w.date === ts() ? i : -1).filter(i => i >= 0);
 const d = dw();
 if (!d.length) return;
 if (ci >= d.length) ci = 0;
 const w = d[ci];
 
-document.getElementById(‘fw’).textContent   = w.word;
-document.getElementById(‘fp’).textContent   = w.pos;
-document.getElementById(‘fbw’).textContent  = w.word;
-document.getElementById(‘fbp’).textContent  = w.pos;
-document.getElementById(‘fbm’).textContent  = w.mu;
-document.getElementById(‘fbe’).textContent  = w.me;
-document.getElementById(‘fbs’).innerHTML    = w.se;
-document.getElementById(‘fbsk’).textContent = w.sk;
+document.getElementById(‘fw’).textContent    = w.word;
+document.getElementById(‘fp’).textContent    = w.pos;
+document.getElementById(‘fbw’).textContent   = w.word;
+document.getElementById(‘fbp’).textContent   = w.pos;
+document.getElementById(‘fbm’).textContent   = w.mu;
+document.getElementById(‘fbe’).textContent   = w.me;
+document.getElementById(‘fbs’).innerHTML     = w.se;
+document.getElementById(‘fbsk’).textContent  = w.sk;
 document.getElementById(‘fbsk’).classList.remove(‘on’);
 document.getElementById(‘fbtkr’).textContent = ‘🇰🇷 한글 번역 보기’;
 document.getElementById(‘mcnt’).textContent  = `${ci+1} / ${d.length}`;
@@ -83,17 +77,22 @@ document.getElementById(‘mprog’).style.width = `${((ci+1)/d.length)*100}%`;
 document.getElementById(‘mflip’).classList.remove(‘f’);
 }
 
-window.flipMain = function() { document.getElementById(‘mflip’).classList.toggle(‘f’); };
+function flipMain() { document.getElementById(‘mflip’).classList.toggle(‘f’); }
 
-window.tkr = function(sid, bid) {
+function tkr(sid, bid) {
 const s = document.getElementById(sid), b = document.getElementById(bid);
 s.classList.toggle(‘on’);
 b.textContent = s.classList.contains(‘on’) ? ‘🇰🇷 번역 숨기기’ : ‘🇰🇷 한글 번역 보기’;
-};
+}
 
-window.mv = function(d) { const dws = dw(); ci = (ci + d + dws.length) % dws.length; rs(); };
+function mv(d) {
+const dws = dw();
+if (!dws.length) return;
+ci = (ci + d + dws.length) % dws.length;
+rs();
+}
 
-window.toggleShuffle = function() {
+function toggleShuffle() {
 sf = !sf;
 const b = document.getElementById(‘sfbtn’);
 if (sf) {
@@ -106,14 +105,14 @@ ord = words.map((w, i) => w.date === ts() ? i : -1).filter(i => i >= 0);
 b.textContent = ‘🔀 섞기’; b.classList.remove(‘on’); toast(‘📋 원래 순서로!’);
 }
 ci = 0; rs();
-};
+}
 
-window.mark = function(v) {
+function mark(v) {
 const w = dw()[ci]; if (!w) return;
 if (v === ‘know’) { wrong = wrong.filter(k => k !== w.word); toast(‘✅ 오답에서 제거!’); }
 else { if (!wrong.includes(w.word)) wrong.push(w.word); toast(v === ‘no’ ? ‘❌ 오답 추가!’ : ‘😅 오답 추가!’); }
-saveWrong(wrong); ubdg(); window.mv(1);
-};
+saveWrong(wrong); ubdg(); mv(1);
+}
 
 function ubdg() {
 const b = document.getElementById(‘rvbdg’);
@@ -147,19 +146,23 @@ c.innerHTML = `
   </div>`;
 }
 
-window.rvm = function(v) {
+function rvm(v) {
 const ww = words.filter(w => wrong.includes(w.word));
 if (v === ‘know’) { wrong = wrong.filter(k => k !== ww[rvi].word); toast(‘✅ 오답 제거!’); }
 else toast(‘❌ 다음에 또 복습해요!’);
 saveWrong(wrong); ubdg(); rvi++; brv();
-};
+}
 
 // ── 보관함 ───────────────────────────────────────────────────────────
 function rarc() {
-const checked = JSON.parse(localStorage.getItem(‘gr63_checked’) || ‘{}’);
+const checked = loadChecked();
 const bd = {};
 words.forEach(w => { if (!bd[w.date]) bd[w.date] = []; bd[w.date].push(w); });
 const dates = Object.keys(bd).sort((a, b) => b.localeCompare(a));
+if (!dates.length) {
+document.getElementById(‘arclist’).innerHTML = ‘<div class="empty"><div class="ico">📭</div>저장된 단어가 없어요</div>’;
+return;
+}
 document.getElementById(‘arclist’).innerHTML = dates.map(dt => `
 
   <div class="folder" id="fold-${dt}">
@@ -177,42 +180,44 @@ document.getElementById(‘arclist’).innerHTML = dates.map(dt => `
       <div class="wlist">${bd[dt].map(w => `
         <div class="witem${wrong.includes(w.word)?' ww':''}">
           <div style="display:flex;align-items:center;gap:8px;flex:1">
-            <input type="checkbox" ${checked[w.word]?'checked':''} onchange="toggleCheck('${w.word.replace(/'/g,"\\'")}','${dt}')" style="accent-color:var(--ac);width:15px;height:15px;cursor:pointer;flex-shrink:0">
+            <input type="checkbox" ${checked[w.word]?'checked':''} onchange="toggleCheck('${w.word.replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${dt}')" style="accent-color:var(--ac);width:15px;height:15px;cursor:pointer;flex-shrink:0">
             <div>
-              <div><span class="wword" style="${checked[w.word]?'text-decoration:line-through;opacity:.4':''}">${w.word}</span>${wrong.includes(w.word)?'<span class="wtag">오답</span>':''}</div>
+              <div><span class="wword" style="${checked[w.word]?'text-decoration:line-through;opacity:.45':''}">${w.word}</span>${wrong.includes(w.word)?'<span class="wtag">오답</span>':''}</div>
               <div class="wmean">${w.mu}</div>
             </div>
           </div>
-          <button class="wdel" onclick="dw2('${w.word.replace(/'/g,"\\'")}')">🗑</button>
+          <button class="wdel" onclick="dw2('${w.word.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">🗑</button>
         </div>`).join('')}</div>
     </div>
   </div>`).join('');
 }
 
-window.toggleCheck = function(word, dt) {
-const checked = JSON.parse(localStorage.getItem(‘gr63_checked’) || ‘{}’);
+function toggleCheck(word, dt) {
+const checked = loadChecked();
 checked[word] = !checked[word];
-localStorage.setItem(‘gr63_checked’, JSON.stringify(checked));
+saveChecked(checked);
 rarc();
-const b=document.getElementById(‘fbody-’+dt), c=document.getElementById(‘fchev-’+dt), i=document.getElementById(‘fico-’+dt);
-if(b){ b.classList.add(‘open’); c.classList.add(‘open’); i.textContent=‘📂’; }
-};
+const b = document.getElementById(‘fbody-’+dt);
+const c = document.getElementById(‘fchev-’+dt);
+const i = document.getElementById(‘fico-’+dt);
+if (b) { b.classList.add(‘open’); c.classList.add(‘open’); i.textContent = ‘📂’; }
+}
 
-window.tgf = function(dt) {
+function tgf(dt) {
 const body = document.getElementById(‘fbody-’+dt);
 const chev = document.getElementById(‘fchev-’+dt);
 const ico  = document.getElementById(‘fico-’+dt);
 const o = body.classList.contains(‘open’);
 body.classList.toggle(‘open’); chev.classList.toggle(‘open’, !o); ico.textContent = o ? ‘📁’ : ‘📂’;
-};
+}
 
 // 보관함 단어 학습
 let fsi = 0, fsw = [], fsd = ‘’;
-window.fss = function(dt) {
+function fss(dt) {
 const bd = {}; words.forEach(w => { if (!bd[w.date]) bd[w.date] = []; bd[w.date].push(w); });
 fsw = bd[dt] || []; fsi = 0; fsd = dt;
 document.getElementById(‘fbody-’+dt).innerHTML = bfsh(dt);
-};
+}
 function bfsh(dt) {
 if (!fsw.length) return ‘<div class="empty"><div class="ico">📭</div>단어 없음</div>’;
 const w = fsw[fsi];
@@ -232,17 +237,17 @@ return `<button class="bbtn" onclick="btf('${dt}')">← 목록으로</button>
     <button class="arr" onclick="fsg(1)" ${fsi===fsw.length-1?'style="opacity:.4"':''}>다음 →</button>
   </div>`;
 }
-window.fsg = function(d) { const n = fsi + d; if (n < 0 || n >= fsw.length) return; fsi = n; document.getElementById('fbody-'+fsd).innerHTML = bfsh(fsd); };
+function fsg(d) { const n = fsi + d; if (n < 0 || n >= fsw.length) return; fsi = n; document.getElementById('fbody-'+fsd).innerHTML = bfsh(fsd); }
 
 // 보관함 퀴즈
 let fqi = 0, fqs2 = [], fqsc = 0, fqch = null, fqd = ‘’;
 function shar(a) { const r=[…a]; for(let i=r.length-1;i>0;i–){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];} return r; }
 
-window.fqs = function(dt) {
+function fqs(dt) {
 const bd = {}; words.forEach(w => { if (!bd[w.date]) bd[w.date] = []; bd[w.date].push(w); });
 fqd = dt; fqs2 = shar([…(bd[dt]||[])]); fqi = 0; fqsc = 0; fqch = null;
 document.getElementById(‘fbody-’+dt).innerHTML = bfqh(dt);
-};
+}
 function bfqh(dt) {
 if (fqi >= fqs2.length) {
 const s = fqsc, t = fqs2.length;
@@ -253,7 +258,7 @@ const opts = shar([qw, …shar(words.filter(w => w.word !== qw.word)).slice(0,3)
 const oh = opts.map(o => {
 let cls = ‘qopt’;
 if (fqch) cls += o.word === qw.word ? ’ qok’ : o.word === fqch ? ’ qno’ : ‘’;
-return `<button class="${cls}" onclick="fqp('${o.word.replace(/'/g,"\\'")}','${dt}')" ${fqch?'disabled':''}>${o.mu}</button>`;
+return `<button class="${cls}" onclick="fqp('${o.word.replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${dt}')" ${fqch?'disabled':''}>${o.mu}</button>`;
 }).join(’’);
 return `<button class="bbtn" onclick="btf('${dt}')">← 목록으로</button>
 
@@ -264,8 +269,7 @@ return `<button class="bbtn" onclick="btf('${dt}')">← 목록으로</button>
   ${fqch ? `<button class="qnxt" onclick="fqn('${dt}')">${fqi+1>=fqs2.length?'결과 보기 →':'다음 →'}</button>` : ''}`;
 }
 
-// 퀴즈 오답 처리 수정 - 틀리면 오답 노트에 추가
-window.fqp = function(word, dt) {
+function fqp(word, dt) {
 if (fqch) return;
 fqch = word;
 if (word === fqs2[fqi].word) {
@@ -275,17 +279,25 @@ if (!wrong.includes(fqs2[fqi].word)) wrong.push(fqs2[fqi].word);
 saveWrong(wrong); ubdg();
 }
 document.getElementById(‘fbody-’+dt).innerHTML = bfqh(dt);
-};
+}
 
-window.fqn = function(dt) { fqi++; fqch=null; document.getElementById(‘fbody-’+dt).innerHTML=bfqh(dt); };
-window.btf = function(dt) { rarc(); const b=document.getElementById(‘fbody-’+dt),c=document.getElementById(‘fchev-’+dt),i=document.getElementById(‘fico-’+dt); if(b){b.classList.add(‘open’);c.classList.add(‘open’);i.textContent=‘📂’;} };
-window.dw2 = function(word) {
+function fqn(dt) { fqi++; fqch = null; document.getElementById(‘fbody-’+dt).innerHTML = bfqh(dt); }
+
+function btf(dt) {
+rarc();
+const b = document.getElementById(‘fbody-’+dt);
+const c = document.getElementById(‘fchev-’+dt);
+const i = document.getElementById(‘fico-’+dt);
+if (b) { b.classList.add(‘open’); c.classList.add(‘open’); i.textContent = ‘📂’; }
+}
+
+function dw2(word) {
 if (!confirm(`"${word}" 를 삭제할까요?`)) return;
 words = words.filter(w => w.word !== word);
 wrong = wrong.filter(k => k !== word);
-ord = words.map((_, i) => i);
+ord = words.map((w, i) => w.date === ts() ? i : -1).filter(i => i >= 0);
 ci = 0; saveWords(words); saveWrong(wrong); ubdg(); rarc(); toast(‘🗑 삭제됐어요’);
-};
+}
 
 // ── 추가 페이지 ───────────────────────────────────────────────────────
 function rta() {
@@ -296,7 +308,7 @@ sec.style.display = ‘block’;
 list.innerHTML = tw.map(w => `<div class="ti"><div class="tw">${w.word}</div><div class="tm">${w.mu}</div></div>`).join(’’);
 }
 
-window.addWords = async function() {
+async function addWords() {
 const raw    = document.getElementById(‘addinp’).value.trim();
 const apiKey = loadApiKey();
 if (!raw)    { toast(‘단어를 입력해주세요!’); return; }
@@ -341,7 +353,7 @@ Parse the input and extract vocabulary items. Return a JSON array. Each object:
   gen.innerHTML = `<div style="color:var(--ac2);font-size:.75rem;padding:10px;background:var(--card);border-radius:8px;margin-top:8px">${e.message}</div>`;
   }
   btn.disabled = false;
-  };
+  }
 
 // ── 설정 페이지 ───────────────────────────────────────────────────────
 function rset() {
@@ -349,46 +361,48 @@ const saved = loadApiKey();
 if (saved) document.getElementById(‘apikey’).value = saved;
 }
 
-window.saveKey = function() {
+function saveKey() {
 const key = document.getElementById(‘apikey’).value.trim();
 if (!key) { toast(‘API 키를 입력해주세요’); return; }
 saveApiKey(key);
 toast(‘✅ API 키가 저장됐어요!’);
-};
+}
 
-window.doExport = function() {
+function doExport() {
 const json = exportData();
 document.getElementById(‘iotxt’).value = json;
 navigator.clipboard.writeText(json).then(() => toast(‘📋 클립보드에 복사됐어요!’)).catch(() => toast(‘위 텍스트를 직접 복사하세요’));
-};
+}
 
-window.doImport = function() {
+function doImport() {
 const txt = document.getElementById(‘iotxt’).value.trim();
 if (!txt) { toast(‘데이터를 붙여넣어 주세요’); return; }
 try {
 importData(txt);
 words = loadWords() || [];
 wrong = loadWrong();
-ord = words.map((_, i) => i);
+ord = words.map((w, i) => w.date === ts() ? i : -1).filter(i => i >= 0);
 ci = 0; ubdg();
 toast(‘✅ 데이터를 가져왔어요! 새로고침하면 반영돼요’);
 } catch(e) {
 toast(‘❌ 데이터 형식이 잘못됐어요’);
 }
-};
+}
 
 // ── 스와이프 ──────────────────────────────────────────────────────────
 let tx = 0, ty = 0;
+document.addEventListener(‘DOMContentLoaded’, function() {
 const msc = document.getElementById(‘mscene’);
 if (msc) {
 msc.addEventListener(‘touchstart’, e => { tx=e.touches[0].clientX; ty=e.touches[0].clientY; }, {passive:true});
 msc.addEventListener(‘touchend’, e => {
 const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty;
 if(Math.abs(dx)<50&&Math.abs(dy)<50)return;
-if(Math.abs(dx)>=Math.abs(dy)){if(dx<0)window.mv(1);else window.mv(-1);}
-else window.flipMain();
+if(Math.abs(dx)>=Math.abs(dy)){if(dx<0)mv(1);else mv(-1);}
+else flipMain();
 }, {passive:true});
 }
+});
 
 // ── 초기화 ────────────────────────────────────────────────────────────
 rs();
